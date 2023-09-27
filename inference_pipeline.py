@@ -29,11 +29,35 @@ load_task = PythonOperator(
 #Define task for encoding the categorial variables here
 ######
 
+encode_task = PythonOperator(
+                task_id = 'encode_task',
+            python_callable = encode_features,
+            dag = ML_inference_dag)
+
+
+
+
 ######
 #Define task for normalising the variables here
 ######
+normalize_data_task = PythonOperator(
+                task_id = 'normalize_data_task',
+            python_callable = normalize_data,
+            dag = ML_inference_dag)
+
 
 ######
 #Define task for getting models prediction here
 ######
 
+predict_data_task = PythonOperator(
+                task_id = 'predict_data_task',
+            python_callable = predict_data,
+            dag = ML_inference_dag)
+
+
+load_task.set_downstream(encode_task);
+encode_task.set_downstream(normalize_data_task);
+normalize_data_task.set_downstream(predict_data_task);
+
+load_task >> encode_task >> normalize_data_task >> predict_data_task
